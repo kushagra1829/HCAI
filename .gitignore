@@ -1,0 +1,23 @@
+# .gitignore — AI Fairness Lab
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor directories
+.vscode/
+.idea/
+*.swp
+*~
+
+# Vercel
+.vercel/
+
+# Logs
+*.log

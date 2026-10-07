@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Fairness Lab — Can you tell which AI is actually fair?</title>
+  <meta name="description" content="An interactive university seminar experiment exploring AI fairness, subgroup disparities, and the limits of aggregate accuracy. Based on the Gender Shades paper by Buolamwini & Gebru (2018).">
+  <meta name="robots" content="noindex"><!-- Class experiment — not for indexing -->
+
+  <!-- Favicon placeholder -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%231a1917'/><text x='6' y='23' font-size='18' fill='white'>⚖</text></svg>">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     SITE HEADER
+════════════════════════════════════════════════════════════ -->
+<header id="site-header" role="banner">
+  <div class="header-inner">
+    <div>
+      <a href="#" class="site-title" onclick="goToStage(0); return false;">AI Fairness Lab</a>
+      <div class="site-subtitle">University Seminar Interactive Experiment · AI Fairness Course</div>
+    </div>
+    <div class="header-right">
+      <button id="mode-badge" class="mode-badge demo" onclick="toggleMode()" title="Click to toggle between DEMO and LIVE API mode" aria-label="Toggle between Demo and Live mode">
+        <span class="dot"></span>
+        <span id="mode-label">DEMO</span>
+      </button>
+      <button class="btn btn-secondary" id="btn-presentation" onclick="togglePresentationMode()" style="font-size:0.75rem; padding:6px 14px;">
+        Presentation Mode
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════
+     PROGRESS INDICATOR
+════════════════════════════════════════════════════════════ -->
+<nav id="progress-bar" aria-label="Activity stages">
+  <div class="progress-inner">
+    <div class="progress-step" id="prog-0">
+      <span class="step-num">00</span>
+      <span class="step-label">Overview</span>
+    </div>
+    <div class="progress-step" id="prog-1">
+      <span class="step-num">01</span>
+      <span class="step-label">Choose</span>
+    </div>
+    <div class="progress-step" id="prog-2">
+      <span class="step-num">02</span>
+      <span class="step-label">Test</span>
+    </div>
+    <div class="progress-step" id="prog-3">
+      <span class="step-num">03</span>
+      <span class="step-label">Compare</span>
+    </div>
+    <div class="progress-step" id="prog-4">
+      <span class="step-num">04</span>
+      <span class="step-label">Audit</span>
+    </div>
+    <div class="progress-step" id="prog-5">
+      <span class="step-num">05</span>
+      <span class="step-label">Reflect</span>
+    </div>
+  </div>
+</nav>
+
+<main id="main-content">
+
+<!-- ════════════════════════════════════════════════════════════
+     STAGE 00 — INTRODUCTION
+════════════════════════════════════════════════════════════ -->
+<section id="stage-0" class="stage" aria-label="Introduction">
+  <div class="intro-screen">
+    <div class="intro-tag">University Seminar Activity · AI Fairness Course</div>
+    <h1 class="intro-title">AI FAIRNESS LAB</h1>
+    <p class="intro-subtitle">Can you tell which AI is actually fair?</p>
+    <div class="intro-divider"></div>
+
+    <p class="intro-context" style="font-size: 1.05rem; color: var(--color-text-primary);">
+      <strong>You are the AI auditor.</strong><br>
+      Compare multiple AI systems, investigate subgroup performance, and decide what you would deploy.
+    </p>
+
+    <div class="sim-notice" style="margin-top: var(--space-md); margin-bottom: var(--space-lg);">
+      <strong>About the data:</strong> This audit uses actual published subgroup results from the landmark paper by Joy Buolamwini &amp; Timnit Gebru (2018), <em>Gender Shades</em>. Exploratory experiments use clearly labeled illustrative simulations.
+    </div>
+
+    <div class="btn-group" style="margin-top: var(--space-lg);">
+      <button class="btn btn-primary" onclick="goToStage(1)" style="font-size: 1rem; padding: 12px 24px;">
+        Start the experiment →
+      </button>
+      <button class="btn btn-secondary" onclick="openAboutModal()" style="font-size: 1rem; padding: 12px 24px;">
+        About this seminar
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     STAGE 01 — PREDICT / CHOOSE
+════════════════════════════════════════════════════════════ -->
+<section id="stage-1" class="stage" aria-label="Stage 01: Choose a system">
+  <div class="stage-inner">
+    <div class="stage-header">
+      <p class="stage-label">Stage 01 — Choose</p>
+      <h1 class="stage-title">Which AI would you trust?</h1>
+      <p class="stage-description">
+        Three AI systems are being evaluated on the same task: classifying gender in photographs. Before you see any performance data, make an initial judgement. Which system would you choose to trust?
+      </p>
+    </div>
+
+    <div class="info-box">
+      The provider identities behind each system are hidden to ensure an unbiased audit. For now, they are labeled <strong>System A</strong>, <strong>System B</strong>, and <strong>System C</strong>.
+    </div>
+
+    <div class="vote-grid" role="group" aria-label="Choose an AI system">
+      <button class="vote-card" id="vote-modelA" onclick="selectModel('A')" aria-pressed="false">
+        <div class="vote-card-label">AI System</div>
+        <div class="vote-card-name">System A</div>
+        <div class="vote-card-hint">Commercial classifier</div>
+      </button>
+      <button class="vote-card" id="vote-modelB" onclick="selectModel('B')" aria-pressed="false">
+        <div class="vote-card-label">AI System</div>
+        <div class="vote-card-name">System B</div>
+        <div class="vote-card-hint">Commercial classifier</div>
+      </button>
+      <button class="vote-card" id="vote-modelC" onclick="selectModel('C')" aria-pressed="false">
+        <div class="vote-card-label">AI System</div>
+        <div class="vote-card-name">System C</div>
+        <div class="vote-card-hint">Commercial classifier</div>
+      </button>
+    </div>
+
+    <div id="vote-confirmation" class="choice-confirm hidden" aria-live="polite">
+      You chose <strong id="vote-chosen-label">System A</strong>. You can change your choice before continuing.
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-ghost" onclick="goToStage(0)">← Back</button>
+      <button class="btn btn-primary" id="btn-to-stage2" onclick="goToStage(2)" disabled>
+        Continue → Test the systems
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     STAGE 02 — TEST THE SYSTEMS
+════════════════════════════════════════════════════════════ -->
+<section id="stage-2" class="stage" aria-label="Stage 02: Test the systems">
+  <div class="stage-inner">
+    <div class="stage-header">
+      <p class="stage-label">Stage 02 — Test</p>
+      <h1 class="stage-title">Test the systems</h1>
+      <p class="stage-description">
+        Select a test case below and run it through all three systems. Each test case is a controlled demonstration scenario.
+      </p>
+    </div>
+
+    <div class="sim-notice">
+      <strong>Illustrative simulation</strong> — Test cases and system responses shown here are demonstration scenarios. In Demo Mode, cached responses are used to illustrate error patterns without requiring live API keys.
+    </div>
+
+    <!-- Test case selector -->
+    <div class="test-case-selector" role="group" aria-label="Select test case">
+      <button class="test-case-btn active" id="tcbtn-tc01" onclick="selectTestCase('tc01')" aria-pressed="true">
+        <span class="tc-num">Case 01</span>
+        <span class="tc-name">Lighter-skinned female</span>
+      </button>
+      <button class="test-case-btn" id="tcbtn-tc02" onclick="selectTestCase('tc02')" aria-pressed="false">
+        <span class="tc-num">Case 02</span>
+        <span class="tc-name">Darker-skinned female</span>
+      </button>
+      <button class="test-case-btn" id="tcbtn-tc03" onclick="selectTestCase('tc03')" aria-pressed="false">
+        <span class="tc-num">Case 03</span>
+        <span class="tc-name">Lighter-skinned male</span>
+      </button>
+      <button class="test-case-btn" id="tcbtn-tc04" onclick="selectTestCase('tc04')" aria-pressed="false">
+        <span class="tc-num">Case 04</span>
+        <span class="tc-name">Darker-skinned male</span>
+      </button>
+      <button class="test-case-btn" id="tcbtn-tc05" onclick="selectTestCase('tc05')" aria-pressed="false">
+        <span class="tc-num">Case 05</span>
+        <span class="tc-name">Borderline confidence</span>
+      </button>
+    </div>
+
+    <!-- Test case panel -->
+    <div class="test-case-panel" id="test-case-panel">
+      <div class="tcp-header">
+        <span class="tcp-title" id="tc-panel-title">Test Case 01</span>
+        <span class="data-label simulation">Simulation</span>
+      </div>
+      <div class="tcp-body">
+        <div class="tcp-visual" id="tc-visual" aria-label="Test case visual">
+          <!-- SVG face placeholder -->
+        </div>
+        <div class="tcp-details">
+          <div id="tc-tags" style="display:flex; gap:6px; flex-wrap:wrap; margin-bottom:var(--space-md);"></div>
+          <p class="tc-detail-text" id="tc-detail-text"></p>
+          <p class="tc-detail-text" style="font-size: 0.78rem; color: var(--color-text-muted);" id="tc-detail-notes"></p>
+
+          <button class="btn btn-primary" id="btn-run-test" onclick="runTest()" style="margin-top: var(--space-md);">
+            Run all systems
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results area -->
+    <div id="results-area" class="hidden">
+      <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: var(--space-md);">System results</h2>
+      <div class="results-grid" id="results-grid" role="region" aria-live="polite" aria-label="System results">
+        <!-- Populated by JS -->
+      </div>
+
+      <div id="disagreement-notice" class="disagreement-notice hidden" role="alert">
+        <div class="disagreement-title">⚠ System disagreement detected</div>
+        <p class="disagreement-text">
+          The models disagree. This gives us a reason to investigate their performance more carefully. Model disagreement is not by itself proof of unfairness.
+        </p>
+      </div>
+    </div>
+
+    <!-- Run all test cases summary -->
+    <div id="batch-summary" class="hidden" style="margin-top:var(--space-xl);">
+      <h2 style="font-size: 1rem; font-weight: 600; margin-bottom: var(--space-md);">Session summary</h2>
+      <p style="font-size:0.85rem; color: var(--color-text-secondary); margin-bottom: var(--space-md);">Cases tested so far in this session:</p>
+      <div id="batch-table-wrap"></div>
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-ghost" onclick="goToStage(1)">← Back</button>
+      <button class="btn btn-primary" onclick="goToStage(3)">
+        Continue → Compare results
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     STAGE 03 — COMPARE / REVEAL
+════════════════════════════════════════════════════════════ -->
+<section id="stage-3" class="stage" aria-label="Stage 03: Compare system performance">
+  <div class="stage-inner">
+    <div class="stage-header">
+      <p class="stage-label">Stage 03 — Compare</p>
+      <h1 class="stage-title">Overall Performance</h1>
+      <p class="stage-description">
+        Here are the overall metrics for each system across the full evaluation benchmark. Based only on this aggregate summary, which system looks best?
+      </p>
+    </div>
+
+    <div class="info-box" style="margin-bottom: var(--space-md);">
+      <strong>Error rate</strong> = percentage of cases incorrectly classified.<br>
+      Notice the relationship: <em>Overall accuracy + Overall error rate = 100%</em>.
+    </div>
+
+    <div class="data-label research">Research Data — Gender Shades (2018)</div>
+
+    <!-- Overall performance cards with both Accuracy and Error Rate -->
+    <div class="agg-grid" role="group" aria-label="Select the system that looks best">
+      <button class="agg-card" id="agg-modelA" onclick="selectAggModel('A')" aria-pressed="false">
+        <div class="agg-model-name">System A</div>
+        <div class="agg-accuracy" id="agg-acc-A">93.7<span style="font-size:1.5rem; font-weight:400;">%</span></div>
+        <div class="agg-accuracy-label">overall accuracy</div>
+        <div class="agg-stats-split">
+          <div class="agg-stat-row">
+            <span class="agg-stat-name">Overall accuracy</span>
+            <span class="agg-stat-val acc">93.7%</span>
+          </div>
+          <div class="agg-stat-row">
+            <span class="agg-stat-name">Overall error rate</span>
+            <span class="agg-stat-val err">6.3%</span>
+          </div>
+        </div>
+      </button>
+
+      <button class="agg-card" id="agg-modelB" onclick="selectAggModel('B')" aria-pressed="false">
+        <div class="agg-model-name">System B</div>
+        <div class="agg-accuracy" id="agg-acc-B">93.9<span style="font-size:1.5rem; font-weight:400;">%</span></div>
+        <div class="agg-accuracy-label">overall accuracy</div>
+        <div class="agg-stats-split">
+          <div class="agg-stat-row">
+            <span class="agg-stat-name">Overall accuracy</span>
+            <span class="agg-stat-val acc">93.9%</span>
+          </div>
+          <div class="agg-stat-row">
+            <span class="agg-stat-name">Overall error rate</span>
+            <span class="agg-stat-val err">6.1%</span>
+          </div>
+        </div>
+      </button>
+
+      <button class="agg-card" id="agg-modelC" onclick="selectAggModel('C')" aria-pressed="false">
+        <div class="agg-model-name">System C</div>
+        <div class="agg-accuracy" id="agg-acc-C">87.9<span style="font-size:1.5rem; font-weight:400;">%</span></div>
+        <div class="agg-accuracy-label">overall accuracy</div>
+        <div class="agg-stats-split">
+          <div class="agg-stat-row">
+            <span class="agg-stat-name">Overall accuracy</span>
+            <span class="agg-stat-val acc">87.9%</span>
+          </div>
+          <div class="agg-stat-row">
+            <span class="agg-stat-name">Overall error rate</span>
+            <span class="agg-stat-val err">12.1%</span>
+          </div>
+        </div>
+      </button>
+    </div>
+
+    <div id="agg-confirmation" class="choice-confirm hidden" aria-live="polite">
+      Based on aggregate accuracy alone, you chose <strong id="agg-chosen-label">System B</strong>.
+    </div>
+
+    <div class="btn-group">
+      <button class="btn btn-ghost" onclick="goToStage(2)">← Back</button>
+      <button class="btn btn-accent" id="btn-look-deeper" onclick="showSubgroupReveal()" disabled>
+        Look deeper at subgroup results →
+      </button>
+    </div>
+
+    <!-- ── REVEAL: Subgroup Analysis ──────────────────────────── -->
+    <div id="subgroup-reveal" class="hidden" style="margin-top: var(--space-2xl); border-top: 2px solid var(--color-border); padding-top: var(--space-xl);">
+
+      <!-- CENTRAL LESSON MOMENT -->
+      <div class="central-lesson-banner">
+        <h2 class="central-lesson-title">The overall number did not tell the whole story.</h2>
+        <p class="central-lesson-desc">
+          Aggregate accuracy can hide substantial differences between demographic subgroups. While overall error rates were only ~6%, the classifier failed repeatedly for darker-skinned female faces.
+        </p>
+      </div>
+
+      <div style="margin-bottom: var(--space-xl);">
+        <div class="data-label research">Research Data — Gender Shades (2018)</div>
+        <h2 style="font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; margin: var(--space-md) 0 4px;">SUBGROUP ERROR RATE</h2>
+        <p style="color: var(--color-text-secondary); font-size: 0.9rem; max-width: 65ch;">
+          <strong>Error rate</strong> = percentage of cases incorrectly classified for that demographic group. Lower error rate is better.
+          <span class="info-icon-badge" title="Error rate measures how often the classifier produced an incorrect result for that subgroup.">i</span>
+        </p>
+      </div>
+
+      <!-- System selector tabs -->
+      <div class="model-tabs" role="tablist" aria-label="Select system for subgroup breakdown">
+        <button class="model-tab active" id="tab-A" onclick="selectSubgroupModel('A')" role="tab" aria-selected="true">System A</button>
+        <button class="model-tab" id="tab-B" onclick="selectSubgroupModel('B')" role="tab" aria-selected="false">System B</button>
+        <button class="model-tab" id="tab-C" onclick="selectSubgroupModel('C')" role="tab" aria-selected="false">System C</button>
+      </div>
+
+      <!-- Subgroup chart -->
+      <div class="subgroup-section" id="subgroup-chart-section">
+        <div class="subgroup-chart" id="subgroup-chart" role="img" aria-label="Subgroup error rates"></div>
+      </div>
+
+      <!-- DIRECT BEST VS WORST COMPARISON CARD -->
+      <div class="best-worst-card" id="best-worst-card">
+        <div class="bw-grid">
+          <div class="bw-col">
+            <div class="bw-col-title">Best-performing subgroup</div>
+            <div class="bw-col-value" id="bw-best-name">Lighter-skinned males</div>
+            <div class="bw-col-sub" id="bw-best-rate">0.0% error rate</div>
+          </div>
+          <div class="bw-col">
+            <div class="bw-col-title">Worst-performing subgroup</div>
+            <div class="bw-col-value" id="bw-worst-name" style="color:var(--color-df);">Darker-skinned females</div>
+            <div class="bw-col-sub" id="bw-worst-rate">20.8% error rate</div>
+          </div>
+          <div class="bw-col bw-gap-highlight">
+            <div class="bw-col-title">Best-to-worst error gap</div>
+            <div class="bw-col-value" id="bw-gap-value">20.8 pp</div>
+            <div class="bw-col-sub" id="bw-gap-sub">20.8 percentage-point error gap</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Accessible table -->
+      <details style="margin-top: var(--space-lg);">
+        <summary style="font-size:0.78rem; color: var(--color-text-muted); cursor:pointer; user-select:none;">Show complete benchmark comparison table</summary>
+        <div style="margin-top: var(--space-md); overflow-x: auto;">
+          <table class="data-table" id="subgroup-table" aria-label="Subgroup error rates table">
+            <thead>
+              <tr>
+                <th>System</th>
+                <th>Darker-skinned female</th>
+                <th>Darker-skinned male</th>
+                <th>Lighter-skinned female</th>
+                <th>Lighter-skinned male</th>
+                <th>Best-to-Worst Gap</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>System A</strong></td>
+                <td style="color:var(--color-df); font-weight:700;">20.8%</td>
+                <td>6.0%</td>
+                <td>1.7%</td>
+                <td style="color:var(--color-lm); font-weight:700;">0.0%</td>
+                <td><strong>20.8 pp</strong></td>
+              </tr>
+              <tr class="highlight">
+                <td><strong>System B</strong></td>
+                <td style="color:var(--color-df); font-weight:700;">34.5%</td>
+                <td style="color:var(--color-lm); font-weight:700;">0.7%</td>
+                <td>9.8%</td>
+                <td>0.8%</td>
+                <td><strong>33.7 pp</strong></td>
+              </tr>
+              <tr>
+                <td><strong>System C</strong></td>
+                <td style="color:var(--color-df); font-weight:700;">34.7%</td>
+                <td>12.0%</td>
+                <td>7.1%</td>
+                <td style="color:var(--color-lm); font-weight:700;">0.3%</td>
+                <td><strong>34.4 pp</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </details>
+
+      <!-- REVEAL MODEL IDENTITIES (Requirement 4) -->
+      <div style="margin-top: var(--space-xl); text-align: center;">
+        <button class="btn btn-secondary" id="btn-reveal-identities" onclick="toggleModelReveal()">
+          Reveal model identities
+        </button>
+      </div>
+
+      <div id="model-reveal-panel" class="reveal-panel hidden">
+        <h3 style="font-size:1.1rem; margin-bottom:4px;">Benchmark Provider Identities</h3>
+        <p style="font-size:0.85rem; color:var(--color-text-secondary); margin-bottom:var(--space-md);">
+          In the published Gender Shades (2018) paper, these systems were major commercial APIs:
+        </p>
+        <div class="reveal-cards-grid">
+          <div class="reveal-card">
+            <div class="reveal-system-label">System A</div>
+            <div class="reveal-provider-name">Microsoft</div>
+            <div class="reveal-status-tag" id="reveal-status-A">Gender Classification API</div>
+          </div>
+          <div class="reveal-card">
+            <div class="reveal-system-label">System B</div>
+            <div class="reveal-provider-name">Face++ (Megvii)</div>
+            <div class="reveal-status-tag" id="reveal-status-B">Face Detect &amp; Analyze API</div>
+          </div>
+          <div class="reveal-card">
+            <div class="reveal-system-label">System C</div>
+            <div class="reveal-provider-name">IBM</div>
+            <div class="reveal-status-tag" id="reveal-status-C">Watson Visual Recognition</div>
+          </div>
+        </div>
+        <p style="font-size:0.75rem; color:var(--color-text-muted); margin-top:var(--space-md); font-style:italic;" id="reveal-mode-footnote">
+          Demo configuration — cached response from Gender Shades benchmark evaluation.
+        </p>
+      </div>
+
+      <!-- WHY THIS MATTERS (Requirement 14) -->
+      <div class="why-matters-box">
+        <h3 style="font-size:1.15rem; margin-bottom:6px;">Why should we care?</h3>
+        <p style="font-size:0.88rem; color:var(--color-text-secondary); line-height:1.6;">
+          Because a system can appear highly accurate overall while failing drastically for a specific demographic group. The consequences of these errors depend entirely on the operational context:
+        </p>
+        <div class="why-matters-grid">
+          <div class="why-context-col">
+            <div class="why-context-title low">
+              <span>●</span> Lower-Stakes Context: Consumer Apps
+            </div>
+            <p style="font-size:0.82rem; color:var(--color-text-secondary); line-height:1.5;">
+              In photo gallery sorting or playful social media filters, an incorrect gender tag causes mild user annoyance or awkwardness. The harm is generally low.
+            </p>
+          </div>
+          <div class="why-context-col">
+            <div class="why-context-title high">
+              <span>●</span> High-Stakes Context: Security &amp; Policing
+            </div>
+            <p style="font-size:0.82rem; color:var(--color-text-secondary); line-height:1.5;">
+              In automated surveillance, border control checkpoints, or building security access, an error rate of 1 in 3 or 1 in 5 leads to wrongful detentions, denied entry, or harassment.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="citation-box" style="margin-top: var(--space-lg);">
+        Buolamwini, J. &amp; Gebru, T. (2018). "Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification." <em>Proceedings of Machine Learning Research</em> 81:1–15.
+      </div>
+
+      <div class="btn-group" style="margin-top: var(--space-xl);">
+        <button class="btn btn-primary" onclick="goToStage(4)">
+          Continue → Audit the system
+        </button>
+      </div>
+    </div><!-- /subgroup-reveal -->
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     STAGE 04 — AI AUDITOR (SIMULATOR)
+════════════════════════════════════════════════════════════ -->
+<section id="stage-4" class="stage" aria-label="Stage 04: AI Auditor">
+  <div class="stage-inner" style="max-width: 1100px;">
+    <div class="stage-header">
+      <p class="stage-label">Stage 04 — Audit</p>
+      <h1 class="stage-title">You are the AI auditor.</h1>
+      <p class="stage-description">
+        Experiment with the controls. See how changing the dataset, the decision threshold, or adding human review changes the outcomes. Then decide which system you would deploy.
+      </p>
+    </div>
+
+    <div class="sim-notice">
+      <strong>Illustrative simulation</strong> — Numbers in this section are for demonstrating fairness concepts and are not results from the Gender Shades paper.
+    </div>
+
+    <div class="simulator-layout">
+
+      <!-- Control Panel -->
+      <div class="control-panel" role="complementary" aria-label="Experiment controls">
+        <div class="cp-header">Controls</div>
+
+        <!-- Dataset balance -->
+        <div class="cp-section">
+          <span class="cp-label">Dataset</span>
+          <div class="toggle-group" role="group" aria-label="Dataset balance">
+            <button class="toggle-btn active" id="toggle-biased" onclick="setDataset('biased')" aria-pressed="true">Biased</button>
+            <button class="toggle-btn" id="toggle-balanced" onclick="setDataset('balanced')" aria-pressed="false">Representative</button>
+          </div>
+          <p style="font-size:0.68rem; color:var(--color-text-muted); margin-top:6px;" id="dataset-desc-short">Training data skewed toward lighter-skinned subjects.</p>
+        </div>
+
+        <!-- Decision threshold -->
+        <div class="cp-section">
+          <span class="cp-label">Decision Threshold</span>
+          <div class="slider-wrap">
+            <input type="range" id="threshold-slider" min="0" max="100" value="50" step="10"
+                   oninput="updateThreshold(this.value)"
+                   aria-label="Decision threshold percentage"
+                   aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+            <div class="slider-track-labels">
+              <span>0%</span>
+              <span>50%</span>
+              <span>100%</span>
+            </div>
+            <div class="slider-value" id="threshold-display">Threshold: 50%</div>
+          </div>
+          <p style="font-size:0.68rem; color:var(--color-text-muted); margin-top:6px;">
+            Lowering or raising threshold shifts false positive vs false negative trade-offs.
+          </p>
+        </div>
+
+        <!-- Model selector -->
+        <div class="cp-section">
+          <span class="cp-label">Model</span>
+          <div class="toggle-group" role="group" aria-label="Select model">
+            <button class="toggle-btn active" id="sim-tab-A" onclick="setSimModel('A')" aria-pressed="true">System A</button>
+            <button class="toggle-btn" id="sim-tab-B" onclick="setSimModel('B')" aria-pressed="false">System B</button>
+            <button class="toggle-btn" id="sim-tab-C" onclick="setSimModel('C')" aria-pressed="false">System C</button>
+          </div>
+        </div>
+
+        <!-- Human Review -->
+        <div class="cp-section">
+          <span class="cp-label">Human Review</span>
+          <div class="toggle-group" role="group" aria-label="Human review setting">
+            <button class="toggle-btn active" id="toggle-review-off" onclick="setHumanReview(false)" aria-pressed="true">Off</button>
+            <button class="toggle-btn" id="toggle-review-on" onclick="setHumanReview(true)" aria-pressed="false">On</button>
+          </div>
+          <p style="font-size:0.68rem; color:var(--color-text-muted); margin-top:6px;" id="human-review-desc">Borderline cases handled automatically.</p>
+        </div>
+      </div>
+
+      <!-- Simulator Output -->
+      <div class="sim-output">
+
+        <!-- Dataset Experiment (Requirement 11) -->
+        <div class="sim-section" id="sim-dataset-section">
+          <div class="sim-section-header">
+            <span>Dataset composition</span>
+            <span class="data-label simulation" style="margin:0;">Simulation</span>
+          </div>
+          <div class="sim-section-body">
+            <div class="info-box" style="margin-bottom: var(--space-md); border-left-color: var(--color-sim);">
+              <strong>SIMULATION:</strong> These values are illustrative and demonstrate how dataset composition could affect evaluation. They are not results from the Gender Shades paper.
+            </div>
+            <p style="font-size:0.82rem; color: var(--color-text-secondary); margin-bottom: var(--space-md);" id="dataset-desc-long">
+              The current training dataset is skewed toward lighter-skinned subjects. This can lead to better model performance for those groups.
+            </p>
+            <div id="dataset-chart" class="subgroup-chart"></div>
+          </div>
+        </div>
+
+        <!-- Threshold Experiment (Requirement 12) -->
+        <div class="sim-section" id="sim-threshold-section">
+          <div class="sim-section-header">
+            <span>Threshold: <span id="threshold-header-val">50%</span></span>
+            <span class="data-label simulation" style="margin:0;">Simulation</span>
+          </div>
+          <div class="sim-section-body">
+            <p style="font-size:0.82rem; color: var(--color-text-secondary); margin-bottom: var(--space-md);">
+              The threshold determines when the model makes a decision versus abstaining. Changing it shifts the trade-off between <strong>false positives</strong> and <strong>false negatives</strong>.
+            </p>
+
+            <div style="font-size:0.8rem; font-weight:600; margin-bottom: var(--space-sm); color: var(--color-text-secondary);">
+              Darker-skinned female subgroup (illustrative simulation)
+            </div>
+            <div class="threshold-display">
+              <div class="threshold-metric">
+                <div class="threshold-metric-label">False Positives</div>
+                <div class="threshold-metric-value fp" id="thresh-fp-df">30</div>
+                <div class="threshold-explanation">Incorrect positive classification</div>
+              </div>
+              <div class="threshold-metric">
+                <div class="threshold-metric-label">False Negatives</div>
+                <div class="threshold-metric-value fn" id="thresh-fn-df">10</div>
+                <div class="threshold-explanation">Incorrect negative classification</div>
+              </div>
+            </div>
+
+            <div style="font-size:0.8rem; font-weight:600; margin-bottom: var(--space-sm); color: var(--color-text-secondary); margin-top: var(--space-lg);">
+              Lighter-skinned male subgroup (illustrative simulation)
+            </div>
+            <div class="threshold-display">
+              <div class="threshold-metric">
+                <div class="threshold-metric-label">False Positives</div>
+                <div class="threshold-metric-value fp" id="thresh-fp-lm">5</div>
+                <div class="threshold-explanation">Incorrect positive classification</div>
+              </div>
+              <div class="threshold-metric">
+                <div class="threshold-metric-label">False Negatives</div>
+                <div class="threshold-metric-value fn" id="thresh-fn-lm">3</div>
+                <div class="threshold-explanation">Incorrect negative classification</div>
+              </div>
+            </div>
+
+            <div class="info-box" style="margin-top: var(--space-lg);">
+              <strong>Key lesson:</strong> Lowering or raising the threshold changes the trade-off between different types of errors. No single threshold is automatically "fair" for every population.
+            </div>
+          </div>
+        </div>
+
+        <!-- Human Review Experiment (Requirement 13) -->
+        <div class="sim-section" id="sim-review-section">
+          <div class="sim-section-header">
+            <span>Borderline case: human review</span>
+            <span class="data-label simulation" style="margin:0;">Simulation</span>
+          </div>
+          <div class="sim-section-body">
+            <div class="hr-scenario">
+              <p style="font-size:0.85rem; color:var(--color-text-secondary); margin-bottom: var(--space-md);">
+                The model has produced an uncertain prediction for this case:
+              </p>
+              <div class="hr-confidence">
+                <div class="hr-conf-num" id="hr-conf-display">63%</div>
+                <div class="hr-conf-label">AI confidence: 63% — This case is uncertain.</div>
+              </div>
+              <p style="font-size:0.85rem; color:var(--color-text-secondary); font-weight:600; margin-bottom:var(--space-md);">
+                How should the system handle this uncertain decision?
+              </p>
+              <div class="hr-options" role="group" aria-label="Choose how to handle borderline case">
+                <button class="hr-option" id="hr-auto" onclick="selectHROption('auto')" aria-pressed="false">
+                  <div class="hr-option-label">Choice 1</div>
+                  <div class="hr-option-title">Automatic decision</div>
+                  <div class="hr-option-desc">The model makes the call regardless of confidence.</div>
+                </button>
+                <button class="hr-option" id="hr-review" onclick="selectHROption('review')" aria-pressed="false">
+                  <div class="hr-option-label">Choice 2</div>
+                  <div class="hr-option-title">Human review</div>
+                  <div class="hr-option-desc">Flag borderline cases for a human decision-maker.</div>
+                </button>
+              </div>
+              <div id="hr-explanation" class="hidden" style="margin-top: var(--space-md);">
+                <div class="info-box">
+                  <strong>The decision procedure around an AI system can affect outcomes even when the underlying model does not change.</strong> Routing uncertain cases to human oversight changes real-world harm, provided human reviewers are trained and fair.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Deployment Decision (Requirement 10 & 15) -->
+        <div class="sim-section" id="sim-deploy-section">
+          <div class="sim-section-header">
+            <span>Deployment decision</span>
+            <span class="data-label simulation" style="margin:0;">Simulation</span>
+          </div>
+          <div class="sim-section-body">
+            <h2 style="font-size:1.3rem; margin-bottom:6px;">WHICH AI WOULD YOU DEPLOY?</h2>
+            <p style="font-size:0.85rem; color:var(--color-text-secondary); margin-bottom: var(--space-md);">
+              You are responsible for deploying an AI system in a high-stakes environment. Three candidate systems are evaluated across multiple criteria:
+            </p>
+
+            <div class="info-box" style="margin-bottom:var(--space-lg); font-size:0.8rem;">
+              <strong>Note on metrics:</strong> No single metric completely determines whether an AI system is ethically fair. Compare overall accuracy, worst subgroup error, error gap, false positive rate, and false negative rate.
+            </div>
+
+            <div class="deployment-grid" role="group" aria-label="Choose a system to deploy">
+              <button class="deployment-card" id="dep-sys1" onclick="selectDeployment('sys1')" aria-pressed="false">
+                <div class="dep-name">System Alpha</div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Overall accuracy</span>
+                  <span class="dep-metric-value good">95.4%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Worst subgroup error</span>
+                  <span class="dep-metric-value bad">22.1%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Best-to-worst error gap</span>
+                  <span class="dep-metric-value bad">22.1 pp</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">False positive rate</span>
+                  <span class="dep-metric-value moderate">4.2%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">False negative rate</span>
+                  <span class="dep-metric-value good">0.4%</span>
+                </div>
+              </button>
+
+              <button class="deployment-card" id="dep-sys2" onclick="selectDeployment('sys2')" aria-pressed="false">
+                <div class="dep-name">System Beta</div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Overall accuracy</span>
+                  <span class="dep-metric-value moderate">91.2%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Worst subgroup error</span>
+                  <span class="dep-metric-value moderate">11.3%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Best-to-worst error gap</span>
+                  <span class="dep-metric-value moderate">10.8 pp</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">False positive rate</span>
+                  <span class="dep-metric-value moderate">7.1%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">False negative rate</span>
+                  <span class="dep-metric-value moderate">1.7%</span>
+                </div>
+              </button>
+
+              <button class="deployment-card" id="dep-sys3" onclick="selectDeployment('sys3')" aria-pressed="false">
+                <div class="dep-name">System Gamma</div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Overall accuracy</span>
+                  <span class="dep-metric-value moderate">88.7%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Worst subgroup error</span>
+                  <span class="dep-metric-value good">6.4%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">Best-to-worst error gap</span>
+                  <span class="dep-metric-value good">5.9 pp</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">False positive rate</span>
+                  <span class="dep-metric-value bad">9.8%</span>
+                </div>
+                <div class="dep-metric">
+                  <span class="dep-metric-label">False negative rate</span>
+                  <span class="dep-metric-value moderate">1.5%</span>
+                </div>
+              </button>
+            </div>
+
+            <div id="deployment-explanation" class="hidden" style="margin-top: var(--space-lg);">
+              <div class="central-lesson-banner" style="margin-top:0;">
+                <div class="central-lesson-title">Your decision depends on what you consider important.</div>
+                <div class="central-lesson-desc">
+                  Selecting <strong>System Alpha</strong> prioritizes maximizing total correct predictions at the cost of high error disparity on a minority. Selecting <strong>System Gamma</strong> prioritizes equal treatment across groups at the cost of lower overall accuracy.
+                </div>
+              </div>
+              <div id="deployment-chosen-text" class="choice-confirm" style="margin-top:var(--space-md);"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /sim-output -->
+    </div><!-- /simulator-layout -->
+
+    <div class="btn-group">
+      <button class="btn btn-ghost" onclick="goToStage(3)">← Back</button>
+      <button class="btn btn-primary" onclick="goToStage(5)">Continue → Reflect</button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     STAGE 05 — REFLECTION
+════════════════════════════════════════════════════════════ -->
+<section id="stage-5" class="stage" aria-label="Stage 05: Reflection">
+  <div class="stage-inner">
+    <div style="max-width: 700px; margin: 0 auto;">
+
+      <div class="stage-header">
+        <p class="stage-label">Stage 05 — Reflect</p>
+        <h1 class="stage-title" style="font-size: clamp(1.75rem, 4vw, 2.5rem);">Which AI is actually fair?</h1>
+      </div>
+
+      <div class="reflection-questions" id="reflection-questions">
+        <div class="reflection-q" id="rq-1">
+          <span class="reflection-q-num">01</span>
+          <span>Is it the one with the highest overall accuracy?</span>
+        </div>
+        <div class="reflection-q" id="rq-2">
+          <span class="reflection-q-num">02</span>
+          <span>The one with the smallest gap between its best and worst subgroup?</span>
+        </div>
+        <div class="reflection-q" id="rq-3">
+          <span class="reflection-q-num">03</span>
+          <span>The one with the fewest false positives?</span>
+        </div>
+        <div class="reflection-q" id="rq-4">
+          <span class="reflection-q-num">04</span>
+          <span>The one with the fewest false negatives?</span>
+        </div>
+        <div class="reflection-q" id="rq-5">
+          <span class="reflection-q-num">05</span>
+          <span>The one with the strongest human oversight built into its decision procedure?</span>
+        </div>
+        <div class="reflection-q" id="rq-6">
+          <span class="reflection-q-num">06</span>
+          <span>The one built with the most representative training data?</span>
+        </div>
+      </div>
+
+      <div class="final-reveal" id="final-reveal">
+        <div class="intro-divider" style="margin: 0 auto var(--space-xl);"></div>
+        <h2 class="final-title">Fair according to which definition,<br>for whom, and in which context?</h2>
+        <p class="final-sub" style="margin-bottom: var(--space-lg);">
+          No single metric completely determines whether an AI system is ethically fair.
+        </p>
+        <p class="final-sub" style="font-size: 0.9rem; font-style: normal;">
+          The answer depends on who is affected, in which context the system is deployed, who designed the evaluation, whose interests were centred in that design, and what harms are considered acceptable.
+        </p>
+      </div>
+
+      <!-- Summary of choices -->
+      <div id="reflection-summary" style="margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border);">
+        <h3 style="margin-bottom: var(--space-md);">Your choices in this session</h3>
+        <div id="summary-choices" style="font-size:0.85rem; color: var(--color-text-secondary);"></div>
+      </div>
+
+      <!-- Sources & Methodology -->
+      <div id="sources-section" style="margin-top: var(--space-2xl); padding-top: var(--space-xl); border-top: 1px solid var(--color-border);">
+        <h2 style="margin-bottom: var(--space-lg);">Sources & methodology</h2>
+
+        <h3 style="margin-bottom: var(--space-sm);">Primary research</h3>
+        <div class="citation-box">
+          Buolamwini, J. &amp; Gebru, T. (2018).<br>
+          "Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification."<br>
+          <em>Proceedings of Machine Learning Research</em> 81:1–15.<br>
+          Available: http://proceedings.mlr.press/v81/buolamwini18a.html
+        </div>
+
+        <h3 style="margin-bottom: var(--space-sm); margin-top: var(--space-lg);">How data is used in this application</h3>
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--space-md);">
+          The subgroup error rates shown in the comparison stage (Stage 03) are reproduced directly from the Gender Shades paper and are clearly labelled as research data.
+        </p>
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--space-md);">
+          All interactive experiments in Stage 04 — including the threshold slider, dataset balance toggle, human review scenario, and deployment decision — use illustrative, simulated values. These values are designed to demonstrate fairness concepts and should not be interpreted as empirical findings from the paper or from any real evaluation.
+        </p>
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
+          Test case responses in Stage 02 use pre-stored demo responses in the default Demo Mode. No real API calls are made unless Live Mode is explicitly enabled by the course instructor.
+        </p>
+
+        <h3 style="margin-bottom: var(--space-sm); margin-top: var(--space-lg);">What this application does not claim</h3>
+        <ul style="font-size: 0.85rem; color: var(--color-text-secondary); padding-left: var(--space-lg);">
+          <li style="margin-bottom: 6px;">It does not claim any AI system is objectively "fair" or "unfair" based on one experiment.</li>
+          <li style="margin-bottom: 6px;">It does not perform demographic inference on any user.</li>
+          <li style="margin-bottom: 6px;">Model disagreement on individual test cases is not presented as evidence of bias.</li>
+          <li>Illustrative simulation values are never presented as research findings.</li>
+        </ul>
+
+        <h3 style="margin-bottom: var(--space-sm); margin-top: var(--space-lg);">About the PPB dataset</h3>
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
+          The Pilot Parliaments Benchmark (PPB) was created by Joy Buolamwini as part of the Gender Shades research. It consists of photographs of members of parliament from three African countries and three European countries, selected to ensure roughly equal gender balance within two skin tone categories.
+        </p>
+      </div>
+
+      <div class="btn-group" style="margin-top: var(--space-xl);">
+        <button class="btn btn-ghost" onclick="goToStage(4)">← Back</button>
+        <button class="btn btn-secondary" onclick="goToStage(0)">Start again</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════════════════════════════════
+     ABOUT THIS SEMINAR — MODAL DIALOG
+════════════════════════════════════════════════════════════ -->
+<div id="about-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="about-modal-title" aria-hidden="true">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <span class="modal-tag">University Seminar Context</span>
+        <h2 id="about-modal-title" class="modal-title">About this seminar &amp; research</h2>
+      </div>
+      <button class="modal-close-btn" onclick="closeAboutModal()" aria-label="Close dialog">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <section class="modal-section">
+        <h3>Seminar context</h3>
+        <p>
+          Built as an interactive, hands-on learning tool for university students and seminar participants exploring AI Ethics and Algorithmic Fairness. This lab allows students to act as AI auditors, critically examining commercial facial classification systems to understand how aggregate accuracy metrics can obscure acute demographic disparities.
+        </p>
+      </section>
+
+      <section class="modal-section">
+        <h3>Three types of data</h3>
+        <ul class="modal-list">
+          <li><strong>1. Real Gender Shades Research Results:</strong> The landmark peer-reviewed error rates from Joy Buolamwini and Timnit Gebru (2018) for Microsoft, Face++, and IBM across 4 intersectional subgroups (lighter male, lighter female, darker male, darker female).</li>
+          <li><strong>2. Live Model Results:</strong> Live predictions, confidence scores, and latency metrics fetched in real-time from the connected backend inference runner when LIVE mode is enabled.</li>
+          <li><strong>3. Illustrative Simulation:</strong> Carefully designed synthetic demonstration data for exploring decision thresholds, training set representation, and human-in-the-loop review policies (clearly labeled: <em>"Illustrative simulation — not data from Gender Shades"</em>).</li>
+        </ul>
+      </section>
+
+      <section class="modal-section">
+        <h3>Privacy</h3>
+        <p>
+          No personal photographs, biometric templates, or individual personal identifiers are gathered or processed. Benchmark evaluations use controlled schematic test cases.
+        </p>
+      </section>
+
+      <section class="modal-section">
+        <h3>Research source</h3>
+        <p>
+          Buolamwini, J., &amp; Gebru, T. (2018). <em>Gender Shades: Intersectional Accuracy Disparities in Commercial Gender Classification</em>. Proceedings of Machine Learning Research (PMLR), 81:1–15.
+        </p>
+      </section>
+
+      <section class="modal-section">
+        <h3>Methodology</h3>
+        <p>
+          Intersectional error analysis evaluating false classifications across the cross-product of gender and phenotypic skin type (Fitzpatrick scale categories I–VI grouped into lighter and darker). The audit demonstrates that assessing a system solely on aggregate accuracy (e.g., &gt;90%) fails to capture severe disparities where particular subgroups experience error rates up to 34%.
+        </p>
+      </section>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeAboutModal()">Close</button>
+      <button class="btn btn-primary" onclick="closeAboutModal(); goToStage(1)">Start the experiment →</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- ════════════════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════════════════ -->
+<footer id="site-footer" role="contentinfo">
+  <p>
+    <strong>AI Fairness Lab</strong> — University Seminar Interactive Experiment<br>
+    Based on: Buolamwini &amp; Gebru (2018), <em>Gender Shades</em> — PMLR 81:1–15<br>
+    Subgroup error rates reproduced from the Gender Shades paper. Interactive simulations are illustrative.
+  </p>
+</footer>
+
+<!-- ════════════════════════════════════════════════════════════
+     DATA SCRIPTS
+════════════════════════════════════════════════════════════ -->
+<script src="data/genderShadesData.js"></script>
+<script src="data/simulationData.js"></script>
+
+<!-- ════════════════════════════════════════════════════════════
+     APPLICATION SCRIPT
+════════════════════════════════════════════════════════════ -->
+<script src="app.js"></script>
+
+</body>
+</html>
