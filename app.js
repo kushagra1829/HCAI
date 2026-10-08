@@ -834,7 +834,7 @@ function selectDeployment(sysId) {
   const explanation = document.getElementById('deployment-explanation');
   explanation.classList.remove('hidden');
 
-  const labels = { sys1: 'System Alpha', sys2: 'System Beta', sys3: 'System Gamma' };
+  const labels = { sys1: 'System A', sys2: 'System B', sys3: 'System C' };
   const text = document.getElementById('deployment-chosen-text');
   text.innerHTML = `You chose <strong>${labels[sysId]}</strong>. This choice reflects a particular set of priorities. In a different context, the right choice might be different.`;
 
@@ -891,7 +891,7 @@ function renderSessionSummary() {
   }
 
   if (AppState.deploymentVote) {
-    const depLabels = { sys1: 'System Alpha', sys2: 'System Beta', sys3: 'System Gamma' };
+    const depLabels = { sys1: 'System A', sys2: 'System B', sys3: 'System C' };
     items.push(`<p style="margin-top:6px;"><strong>Deployment choice:</strong> ${depLabels[AppState.deploymentVote]}</p>`);
   }
 
