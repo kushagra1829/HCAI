@@ -639,20 +639,6 @@ function toggleModelReveal() {
   panel.classList.toggle('hidden', !isHidden);
   btn.textContent = isHidden ? 'Hide model identities' : 'Reveal model identities';
 
-  const isLive = AppState.mode === 'live';
-  const tagA = document.getElementById('reveal-status-A');
-  const tagB = document.getElementById('reveal-status-B');
-  const tagC = document.getElementById('reveal-status-C');
-  if (tagA) tagA.textContent = isLive ? 'Live API inference' : 'Benchmark: Microsoft Gender API';
-  if (tagB) tagB.textContent = isLive ? 'Live API inference' : 'Benchmark: Face++ (Megvii) API';
-  if (tagC) tagC.textContent = isLive ? 'Live API inference' : 'Benchmark: IBM Watson Visual Recognition';
-
-  const footnote = document.getElementById('reveal-mode-footnote');
-  if (footnote) {
-    footnote.textContent = isLive
-      ? 'Live Mode active — Responses processed via local /api/predict inference endpoint.'
-      : 'Demo configuration — cached response from Gender Shades (2018) benchmark evaluation.';
-  }
 
   if (isHidden) {
     panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
