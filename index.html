@@ -246,8 +246,8 @@
     </div>
 
     <div class="info-box" style="margin-bottom: var(--space-md);">
-      <strong>Error rate</strong> = percentage of cases incorrectly classified.<br>
-      Notice the relationship: <em>Overall accuracy + Overall error rate = 100%</em>.
+      <strong>Error rate</strong> = 1 &minus; true positive rate (TPR), following the metric used in the Gender Shades study. The paper reports this metric separately from false positive rate (FPR).<br>
+      Notice the relationship: <em>Higher TPR = lower error rate = better performance</em>.
     </div>
 
     <div class="data-label research">Research Data — Gender Shades (2018)</div>
@@ -329,8 +329,8 @@
         <div class="data-label research">Research Data — Gender Shades (2018)</div>
         <h2 style="font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; margin: var(--space-md) 0 4px;">SUBGROUP ERROR RATE</h2>
         <p style="color: var(--color-text-secondary); font-size: 0.9rem; max-width: 65ch;">
-          <strong>Error rate</strong> = percentage of cases incorrectly classified for that demographic group. Lower error rate is better.
-          <span class="info-icon-badge" title="Error rate measures how often the classifier produced an incorrect result for that subgroup.">i</span>
+          <strong>Error rate</strong> = 1 &minus; true positive rate (TPR), following the metric used in the Gender Shades study. Lower error rate is better. The paper reports this metric separately from false positive rate (FPR).
+          <span class="info-icon-badge" title="Error rate = 1 − TPR. Measures how often the classifier failed to correctly identify a face in that subgroup. Reported separately from FPR in the Gender Shades paper.">i</span>
         </p>
       </div>
 
@@ -461,7 +461,7 @@
               <span>●</span> High-Stakes Context: Security &amp; Policing
             </div>
             <p style="font-size:0.82rem; color:var(--color-text-secondary); line-height:1.5;">
-              In automated surveillance, border control checkpoints, or building security access, an error rate of 1 in 3 or 1 in 5 leads to wrongful detentions, denied entry, or harassment.
+              In automated surveillance, border control checkpoints, or building security access, an error rate of 1 in 3 or 1 in 5 could contribute to serious consequences such as wrongful detention, denied entry, or harassment, depending on the deployment context.
             </p>
           </div>
         </div>
@@ -865,6 +865,16 @@
         <p style="font-size: 0.85rem; color: var(--color-text-secondary);">
           The Pilot Parliaments Benchmark (PPB) was created by Joy Buolamwini as part of the Gender Shades research. It consists of photographs of members of parliament from three African countries and three European countries, selected to ensure roughly equal gender balance within two skin tone categories.
         </p>
+
+        <h3 style="margin-bottom: var(--space-sm); margin-top: var(--space-lg);">Limitations of the study</h3>
+        <p style="font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: var(--space-sm);">The following are limitations of the Gender Shades research itself, not results or conclusions of the study:</p>
+        <ul style="font-size: 0.85rem; color: var(--color-text-secondary); padding-left: var(--space-lg);">
+          <li style="margin-bottom: 6px;">The gender classification task uses binary male/female labels, which do not capture non-binary or gender-diverse identities.</li>
+          <li style="margin-bottom: 6px;">The PPB consists of public figures (parliamentarians) rather than a random population sample.</li>
+          <li style="margin-bottom: 6px;">Images in the dataset were relatively controlled and posed, which may not reflect real-world deployment conditions.</li>
+          <li style="margin-bottom: 6px;">The benchmark covers six countries only and may not generalise globally.</li>
+          <li>Skin tone is grouped into two broader categories (lighter / darker) rather than the full Fitzpatrick scale.</li>
+        </ul>
       </div>
 
       <div class="btn-group" style="margin-top: var(--space-xl);">
