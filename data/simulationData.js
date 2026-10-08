@@ -74,8 +74,8 @@ const SIMULATION_DATA = {
       id: "tc05",
       label: "Test Case 05",
       description: "Portrait — controlled lighting, direct gaze",
-      skinTone: "lighter",
-      gender: "female",
+      skinTone: "medium",
+      gender: "ambiguous",
       notes: "Borderline confidence — demonstrates human review scenario",
       demoResponses: {
         modelA: { prediction: "Female", confidence: 63.2, correct: true },

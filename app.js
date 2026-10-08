@@ -248,9 +248,11 @@ function selectTestCase(id) {
 
   // Tags
   const tagsEl = document.getElementById('tc-tags');
+  const skinLabel = tc.skinTone === 'lighter' ? 'Lighter-skinned' : tc.skinTone === 'darker' ? 'Darker-skinned' : 'Medium-skinned';
+  const genderLabel = tc.gender === 'female' ? 'Female' : tc.gender === 'male' ? 'Male' : 'Ambiguous';
   tagsEl.innerHTML = `
-    <span class="tc-tag ${tc.skinTone}">${tc.skinTone === 'lighter' ? 'Lighter-skinned' : 'Darker-skinned'}</span>
-    <span class="tc-tag ${tc.gender}">${tc.gender === 'female' ? 'Female' : 'Male'}</span>
+    <span class="tc-tag ${tc.skinTone}">${skinLabel}</span>
+    <span class="tc-tag ${tc.gender}">${genderLabel}</span>
   `;
 
   // Visual — SVG face placeholder
@@ -267,19 +269,37 @@ function selectTestCase(id) {
 function renderFacePlaceholder(tc) {
   const visual = document.getElementById('tc-visual');
   const isDarker = tc.skinTone === 'darker';
+  const isMedium = tc.skinTone === 'medium';
   const isFemale = tc.gender === 'female';
+  const isAmbiguous = tc.gender === 'ambiguous';
 
   // Skin tones
-  const skinFill = isDarker ? '#8B5C3A' : '#F5D5B0';
-  const hairFill = isDarker ? '#1a0f08' : (isFemale ? '#5c3a1a' : '#3a2d1a');
-  const featureFill = isDarker ? '#5a3520' : '#b89070';
+  const skinFill = isDarker ? '#8B5C3A' : isMedium ? '#C8956A' : '#F5D5B0';
+  const hairFill = isDarker ? '#1a0f08' : isMedium ? '#2e1a0e' : (isFemale ? '#5c3a1a' : '#3a2d1a');
+  const featureFill = isDarker ? '#5a3520' : isMedium ? '#8a5535' : '#b89070';
 
   // Hair shape varies by gender
-  const hairPath = isFemale
-    ? `<ellipse cx="80" cy="62" rx="42" ry="48" fill="${hairFill}"/>
+  let hairPath;
+  if (isAmbiguous) {
+    // Feminine bob hairstyle (long sides) — but with a beard below
+    hairPath = `<ellipse cx="80" cy="60" rx="42" ry="46" fill="${hairFill}"/>
+       <rect x="38" y="88" width="13" height="36" rx="6" fill="${hairFill}"/>
+       <rect x="109" y="88" width="13" height="36" rx="6" fill="${hairFill}"/>`;
+  } else if (isFemale) {
+    hairPath = `<ellipse cx="80" cy="62" rx="42" ry="48" fill="${hairFill}"/>
        <rect x="38" y="90" width="12" height="30" rx="6" fill="${hairFill}"/>
-       <rect x="110" y="90" width="12" height="30" rx="6" fill="${hairFill}"/>`
-    : `<ellipse cx="80" cy="62" rx="42" ry="42" fill="${hairFill}"/>`;
+       <rect x="110" y="90" width="12" height="30" rx="6" fill="${hairFill}"/>`;
+  } else {
+    hairPath = `<ellipse cx="80" cy="62" rx="42" ry="42" fill="${hairFill}"/>`;
+  }
+
+  // Beard (only for ambiguous)
+  const beardPath = isAmbiguous ? `
+    <!-- Beard / stubble -->
+    <ellipse cx="80" cy="118" rx="22" ry="12" fill="${hairFill}" opacity="0.75"/>
+    <ellipse cx="63" cy="113" rx="10" ry="7" fill="${hairFill}" opacity="0.6"/>
+    <ellipse cx="97" cy="113" rx="10" ry="7" fill="${hairFill}" opacity="0.6"/>
+  ` : '';
 
   visual.innerHTML = `
     <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg"
@@ -300,12 +320,15 @@ function renderFacePlaceholder(tc) {
       <ellipse cx="80" cy="95" rx="4" ry="3" fill="${featureFill}" opacity="0.5"/>
       <!-- Mouth -->
       <path d="M70 108 Q80 115 90 108" stroke="${featureFill}" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Beard (ambiguous only) -->
+      ${beardPath}
       <!-- Shoulders -->
       <ellipse cx="80" cy="155" rx="45" ry="20" fill="${skinFill}" opacity="0.4"/>
     </svg>
     <div style="font-size:0.6rem; color:var(--color-text-muted); margin-top:4px; text-align:center;">Schematic illustration</div>
   `;
 }
+
 
 async function runTest() {
   const tcId = AppState.activeTestCase;
@@ -445,7 +468,7 @@ function updateBatchSummary() {
 
     return `<tr>
       <td>${tc.label}</td>
-      <td>${tc.skinTone === 'lighter' ? 'Lighter' : 'Darker'}-skinned ${tc.gender}</td>
+      <td>${tc.skinTone === 'lighter' ? 'Lighter' : tc.skinTone === 'darker' ? 'Darker' : 'Medium'}-skinned ${tc.gender === 'ambiguous' ? 'Ambiguous' : tc.gender}</td>
       <td style="color:${aColor}; font-weight:700;">${aCorr} ${results.modelA.prediction}</td>
       <td style="color:${bColor}; font-weight:700;">${bCorr} ${results.modelB.prediction}</td>
       <td style="color:${cColor}; font-weight:700;">${cCorr} ${results.modelC.prediction}</td>
